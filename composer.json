@@ -1,0 +1,19 @@
+{
+    "name": "melting/modx/installer",
+    "description": "MODX Revolution installer helper",
+    "keywords": ["MODX"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Romain Tripault",
+            "email": "romain@melting-media.com",
+            "homepage": "http://melting-media.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Melting\\MODX\\Installer\\": "src/"
+        }
+    }
+}
