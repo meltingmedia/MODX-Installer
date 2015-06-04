@@ -127,7 +127,6 @@ class Installer
                     mkdir($target);
                 }
                 $folder = $this->source .'/'. $folder;
-                echo "$folder to $target\n";
                 passthru("cp -rf {$folder}/* {$target}");
             }
         }
