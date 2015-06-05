@@ -109,9 +109,11 @@ class Installer
      */
     protected function buildCoreTransport()
     {
-        copy("{$this->source}/_build/build.config.sample.php", "{$this->source}/_build/build.config.php");
-        copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
-        passthru("php {$this->source}/_build/transport.core.php");
+        if (file_exists("{$this->source}/_build/")) {
+            copy("{$this->source}/_build/build.config.sample.php", "{$this->source}/_build/build.config.php");
+            copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
+            passthru("php {$this->source}/_build/transport.core.php");
+        }
     }
 
     /**
