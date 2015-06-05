@@ -16,7 +16,7 @@ The underlying idea is to be able to "consume" MODX Revolution as a dependency.
 
 ## Requirements
 
-* PHP 5.3+
+* PHP 5.4+
 * MODX Revolution 2.3+
 
 
