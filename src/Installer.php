@@ -117,9 +117,16 @@ class Installer
             copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
             passthru("php {$this->source}/_build/transport.core.php");
         }
-        $isZip = false;
+        $isZip = is_resource(zip_open($this->source));
         if ($isZip) {
-            // Extract
+            $zip = new \ZipArchive($this->source);
+            $path = pathinfo(realpath($this->source), PATHINFO_DIRNAME);
+            // Extract in same folder
+            $extracted = $zip->extractTo($path);
+            if ($extracted) {
+                $this->source = $path;
+            }
+            $zip->close();
         }
     }
 
@@ -132,10 +139,14 @@ class Installer
     {
         if (!empty($this->destinations)) {
             foreach ($this->destinations as $folder => $target) {
+                $folder = $this->source .'/'. $folder;
+                if (!file_exists($folder)) {
+                    // Invalid folder given
+                    continue;
+                }
                 if (!file_exists($target)) {
                     mkdir($target);
                 }
-                $folder = $this->source .'/'. $folder;
                 passthru("cp -rf {$folder}/* {$target}");
             }
         }
