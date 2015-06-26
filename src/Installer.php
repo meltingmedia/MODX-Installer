@@ -66,12 +66,14 @@ class Installer
             $core = $this->getCorePath();
             $args = "upgrade --core_path={$core}";
         } else {
+            // @TODO validate config if any ?
             // Build configFile (XML)
             $configFile = $this->buildConfigFile($config);
             $args = "new --config={$configFile}";
         }
 
         // Run install script
+        // @TODO check passthru
         passthru("php {$this->source}/setup/index.php --installmode={$args}");
 
         if (!$installed) {
@@ -126,6 +128,7 @@ class Installer
         if (is_dir($this->source) && file_exists("{$this->source}/_build/")) {
             copy("{$this->source}/_build/build.config.sample.php", "{$this->source}/_build/build.config.php");
             copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
+            // @TODO check pcntl_fork
             passthru("php {$this->source}/_build/transport.core.php");
         } else if (file_exists($this->source)) {
             $isZip = is_resource(zip_open($this->source));
@@ -167,6 +170,7 @@ class Installer
                 if (!file_exists($target)) {
                     mkdir($target);
                 }
+                // @TODO switch to PHP
                 passthru("cp -rf {$folder}/* {$target}");
             }
         }
