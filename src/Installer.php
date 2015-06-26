@@ -38,14 +38,21 @@ class Installer
      * @param array $config
      * @param string $configKey - An optional configuration key
      *
-     * @return \modX|null
+     * @return \modX|null|string
      */
     public function install(array $config, $configKey = 'config')
     {
         // Validate source
+        if (!is_dir($this->source) || !file_exists($this->source)) {
+            return 'No valid source given (neither a folder nor a zip file)';
+        }
 
         // Do whatever it takes with the source
         $this->handleSource();
+        // At this point source should be a folder with a "setup" folder
+        if (!is_dir($this->source) || !is_dir("{$this->source}/setup")) {
+            return 'No valid setup folder found in the source';
+        }
 
         // Move folders to their destinations, if any
         $this->handleCustomFolders();
@@ -110,23 +117,32 @@ class Installer
      *
      * @return void
      */
-    protected function handleSource()
+    public function handleSource()
     {
-        if (file_exists("{$this->source}/_build/")) {
+        if (is_dir($this->source) && file_exists("{$this->source}/_build/")) {
             copy("{$this->source}/_build/build.config.sample.php", "{$this->source}/_build/build.config.php");
             copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
             passthru("php {$this->source}/_build/transport.core.php");
-        }
-        $isZip = is_resource(zip_open($this->source));
-        if ($isZip) {
-            $zip = new \ZipArchive($this->source);
-            $path = pathinfo(realpath($this->source), PATHINFO_DIRNAME);
-            // Extract in same folder
-            $extracted = $zip->extractTo($path);
-            if ($extracted) {
-                $this->source = $path;
+        } else if (file_exists($this->source)) {
+            $isZip = is_resource(zip_open($this->source));
+            if ($isZip) {
+                $zip = new \ZipArchive();
+                if ($zip->open($this->source) === true) {
+                    $path = pathinfo($this->source, PATHINFO_DIRNAME);
+                    $file = pathinfo($this->source, PATHINFO_BASENAME);
+                    // Extract in same folder
+                    $extracted = $zip->extractTo($path);
+                    if ($extracted) {
+                        // Cleanup file name to get the extracted folder name
+                        $extractedFolder = str_replace(array(
+                            '.zip', '-advanced', '-sdk'
+                        ), '', $file);
+                        // Make our newly extract folder our source
+                        $this->source = $path .'/'. $extractedFolder;
+                    }
+                    $zip->close();
+                }
             }
-            $zip->close();
         }
     }
 
@@ -140,8 +156,8 @@ class Installer
         if (!empty($this->destinations)) {
             foreach ($this->destinations as $folder => $target) {
                 $folder = $this->source .'/'. $folder;
-                if (!file_exists($folder)) {
-                    // Invalid folder given
+                if (!file_exists($folder) || empty($target)) {
+                    // Invalid folder/target given
                     continue;
                 }
                 if (!file_exists($target)) {
