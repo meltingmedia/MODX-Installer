@@ -43,15 +43,19 @@ class Installer
     public function install(array $config, $configKey = 'config')
     {
         // Validate source
-        if (!is_dir($this->source) || !file_exists($this->source)) {
-            return 'No valid source given (neither a folder nor a zip file)';
+        if (!is_dir($this->source) && !file_exists($this->source)) {
+            return "No valid source given : {$this->source} is neither a folder nor a zip file";
         }
 
         // Do whatever it takes with the source
         $this->handleSource();
         // At this point source should be a folder with a "setup" folder
         if (!is_dir($this->source) || !is_dir("{$this->source}/setup")) {
-            return 'No valid setup folder found in the source';
+            return "No valid setup folder found in the source : {$this->source}";
+        }
+        if (is_dir("{$this->source}/_build")) {
+            // We have extract a zip file from the git repository, let's build the core!
+            $this->handleSource();
         }
 
         // Move folders to their destinations, if any
