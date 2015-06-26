@@ -28,7 +28,7 @@ class Installer
      */
     public function __construct($source, array $destinations = [])
     {
-        $this->source = $source;
+        $this->source = realpath($source);
         $this->destinations = $destinations;
     }
 
@@ -44,8 +44,8 @@ class Installer
     {
         // Validate source
 
-        // Build core transport
-        $this->buildCoreTransport();
+        // Do whatever it takes with the source
+        $this->handleSource();
 
         // Move folders to their destinations, if any
         $this->handleCustomFolders();
@@ -83,7 +83,7 @@ class Installer
     {
         $path = $this->getCorePath();
 
-        return file_exists("{$path}/config/{$key}.inc.php");
+        return file_exists(realpath("{$path}/config/{$key}.inc.php"));
     }
 
     /**
@@ -99,20 +99,27 @@ class Installer
             $path = $this->destinations['core'];
         }
 
-        return $path;
+        return realpath($path);
     }
 
     /**
-     * Build the core.transport.zip package
+     * Handle the source. Either
+     *
+     * Build the core.transport.zip package (git source)
+     * Extract the zip archive
      *
      * @return void
      */
-    protected function buildCoreTransport()
+    protected function handleSource()
     {
         if (file_exists("{$this->source}/_build/")) {
             copy("{$this->source}/_build/build.config.sample.php", "{$this->source}/_build/build.config.php");
             copy("{$this->source}/_build/build.properties.sample.php", "{$this->source}/_build/build.properties.php");
             passthru("php {$this->source}/_build/transport.core.php");
+        }
+        $isZip = false;
+        if ($isZip) {
+            // Extract
         }
     }
 
